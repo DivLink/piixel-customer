@@ -1,0 +1,37 @@
+.pcal { background: #fff; border: 1px solid #ecdcc3; border-radius: 22px; overflow: hidden; max-width: 460px; box-shadow: 0 8px 28px rgba(74, 44, 20, .1); }
+
+.pcal-hero { display: flex; align-items: center; gap: 14px; padding: 16px 18px; color: #fff; background: linear-gradient(135deg, #7a4a24, #b87d3f); }
+.pcal-hero-day { font-size: 44px; line-height: 1; font-weight: 800; min-width: 56px; }
+.pcal-hero-text { flex: 1; display: flex; flex-direction: column; }
+.pcal-hero-text b { font-size: 17px; }
+.pcal-hero-text span { font-size: 13px; opacity: .85; }
+.pcal-today { border: 0; border-radius: 999px; padding: 7px 14px; font-size: 12px; font-weight: 700; color: #7a4a24; background: #fff; cursor: pointer; }
+.pcal-today:hover { background: #f5ead8; }
+
+.pcal-body { padding: 14px 16px 18px; }
+
+.pcal-months { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none; }
+.pcal-months::-webkit-scrollbar { display: none; }
+.pcal-months button { flex: none; border: 0; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 600; color: #7a4a24; background: #f5ead8; cursor: pointer; transition: .15s; }
+.pcal-months button:hover { background: #ecd9b9; }
+.pcal-months button.on { background: #7a4a24; color: #fff; }
+
+.pcal-nav { display: flex; align-items: center; justify-content: space-between; margin: 2px 0 10px; }
+.pcal-nav b { font-size: 16px; color: #2b1a0e; }
+.pcal-nav b span { color: #b87d3f; }
+.pcal-arrow { width: 34px; height: 34px; border-radius: 50%; border: 1px solid #ecdcc3; background: #fff; color: #5a3519; display: grid; place-items: center; cursor: pointer; }
+.pcal-arrow:hover:not(:disabled) { background: #f5ead8; }
+.pcal-arrow:disabled { opacity: .35; cursor: not-allowed; }
+
+.pcal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.pcal-dow { margin-bottom: 4px; }
+.pcal-dow span { text-align: center; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #a8845f; padding: 4px 0; }
+
+.pcal-day { width: 100%; aspect-ratio: 1; max-height: 46px; border: 0; border-radius: 12px; background: transparent; font-size: 14px; font-weight: 600; color: #2b1a0e; cursor: pointer; transition: .12s; }
+.pcal-day:hover:not(:disabled):not(.sel) { background: #f5ead8; }
+.pcal-day:disabled { color: #cdbba3; font-weight: 500; cursor: not-allowed; }
+.pcal-day.today:not(.sel) { box-shadow: inset 0 0 0 2px #d9a566; }
+.pcal-day.sel { color: #fff; background: linear-gradient(135deg, #c98d4a, #a86a2e); box-shadow: 0 4px 12px rgba(168, 106, 46, .4); }
+.pcal-day:focus-visible, .pcal-arrow:focus-visible, .pcal-months button:focus-visible, .pcal-today:focus-visible { outline: 2px solid #7a4a24; outline-offset: 2px; }
+
+@media (max-width: 480px) { .pcal-hero-day { font-size: 36px; } .pcal-body { padding: 12px; } }
