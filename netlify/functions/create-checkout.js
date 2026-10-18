@@ -1,15 +1,17 @@
-import admin from 'firebase-admin';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
+if (!getApps().length) {
+  initializeApp({
+    credential: cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
       privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
     }),
   });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 const json = (body, status = 200, extra = {}) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', ...extra } });
@@ -28,7 +30,7 @@ export default async (req) => {
 
   try {
     const token = (req.headers.get('authorization') || '').replace('Bearer ', '');
-    const { uid } = await admin.auth().verifyIdToken(token);
+    const { uid } = await getAuth().verifyIdToken(token);
 
     const { bookingDocId } = await req.json();
     const snap = await db.doc(`bookings/${bookingDocId}`).get();
