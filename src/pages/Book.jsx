@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { collection, query, where } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, Smartphone, Store } from 'lucide-react';
-import { db, functions } from '../firebase';
+import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { useLive, useSettings } from '../lib/hooks';
 import { bookingError, cancelBooking, createBooking, fmtDate, fmtHour, fmtRange, logActivity, peso, slotTaken } from '../lib/booking';
@@ -67,8 +66,15 @@ export default function Book() {
       res = await createBooking({ user, profile, court, date, hours, players, method, holdMinutes: s.holdMinutes });
       logActivity(user.uid, 'booking', `Booked ${court.name} on ${date} (#${res.bookingId})`);
       if (method === 'walkin') { setDone(res); return; }
-      const { data } = await httpsCallable(functions, 'createGcashCheckout')({ bookingDocId: res.id });
-      window.location.href = data.checkoutUrl; // GCash checkout hosted by PayMongo
+      const token = await user.getIdToken();
+      const r = await fetch(`${import.meta.env.VITE_API_URL || ''}/.netlify/functions/create-checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ bookingDocId: res.id }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Could not start GCash checkout');
+      window.location.href = data.checkoutUrl;
     } catch (e) {
       if (res && method === 'gcash') await cancelBooking({ id: res.id, courtId: court.id, date, hours }).catch(() => {});
       toast(bookingError(e), 'err');
@@ -126,7 +132,7 @@ export default function Book() {
       <section className="step"><h2><span className="n">5</span>How will you pay?</h2>
         <div className="payopt">
           <button className={`opt ${method === 'gcash' ? 'on' : ''}`} onClick={() => setMethod('gcash')}>
-            <span className="ic gcash-dot">G</span><div><b>Pay online with GCash</b><span>You'll be taken to GCash to pay. Your booking confirms automatically once payment goes through.</span></div>
+          <span className="ic gcash-dot">G</span><div><b>Pay online with GCash</b><span>You'll be taken to GCash to pay. Your booking confirms automatically once payment goes through.</span></div>
           </button>
           <button className={`opt ${method === 'walkin' ? 'on' : ''}`} onClick={() => setMethod('walkin')}>
             <span className="ic"><Store size={20} /></span><div><b>Pay walk-in</b><span>Get a 4-character code now and pay at the front desk before you play.</span></div>

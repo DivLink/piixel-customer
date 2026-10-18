@@ -14,7 +14,7 @@ function TournamentNext({ a, uid, today }) {
   useEffect(() => onSnapshot(doc(db, 'announcements', a.id, 'entries', uid), (s) => setEntry(s.exists() ? s.data() : null)), [a.id, uid]);
   if (!entry || (a.eventDate && a.eventDate < today)) return null;
   return (
-    <div className="bk" style={{ marginTop: 14 }}>
+    <div className="bk bk-tournament" style={{ marginTop: 14 }}>
       <div className="bk-id">{entry.code}</div>
       <div><b>{a.title}</b> <Badge tone="warn">Tournament</Badge>
         <div className="meta">{a.eventDate && <span>{fmtDate(a.eventDate)}</span>}<span>Slot #{entry.slot}</span></div>
