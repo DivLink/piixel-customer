@@ -72,8 +72,13 @@ export default function Book() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ bookingDocId: res.id }),
       });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error || 'Could not start GCash checkout');
+      const text = await r.text();
+      let data = {};
+      try { data = JSON.parse(text); } catch { /* not JSON */ }
+      if (!r.ok) {
+        console.error('create-checkout failed', r.status, text);
+        throw new Error(data.error || `Checkout failed (${r.status})`);
+      }
       window.location.href = data.checkoutUrl;
     } catch (e) {
       if (res && method === 'gcash') await cancelBooking({ id: res.id, courtId: court.id, date, hours }).catch(() => {});
