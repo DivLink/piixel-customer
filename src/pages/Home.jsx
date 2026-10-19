@@ -59,6 +59,42 @@ function MiniPodium({ top }) {
   );
 }
 
+function TicketPile({ items }) {
+  const layers = Math.min(items.length, 3) - 1; // ghost tickets behind the front one
+  const b = items[0];
+  const code = (x) => x.walkInCode || `#${x.bookingId}`;
+  return (
+    <div className="bk" style={{ margin: 0 }}>
+      <div style={{ position: 'relative', isolation: 'isolate', margin: `${layers * 8}px ${layers * 10}px 0 0` }}>
+        {Array.from({ length: layers }, (_, i) => layers - i).map((k) => (
+          <div
+            key={k}
+            className="bk-id"
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              margin: 0,
+              zIndex: 0,
+              transform: `translate(${k * 10}px, ${-k * 8}px) rotate(${k * 3}deg)`,
+              transformOrigin: 'bottom left',
+              filter: `brightness(${1 - k * 0.06})`,
+            }}
+          >
+            {code(items[k])}
+          </div>
+        ))}
+        <div className="bk-id" style={{ position: 'relative', zIndex: 2, margin: 0 }}>{code(b)}</div>
+      </div>
+      <div>
+        <b>{b.courtName}</b> <Badge tone={b.status === 'confirmed' ? 'ok' : 'info'}>{b.status}</Badge>
+        <div className="meta"><span>{fmtDate(b.date)}</span><span>{fmtRange(b.startHour, b.durationHours)}</span></div>
+        {items.length > 1 && <small style={{ color: 'var(--muted)', fontWeight: 700 }}>+{items.length - 1} more upcoming</small>}
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const { user, profile } = useAuth();
   const s = useSettings();
@@ -66,8 +102,9 @@ export default function Home() {
   const news = useLive(() => query(collection(db, 'announcements')), []);
   const board = useLive(() => query(collection(db, 'leaderboard')), []);
   const today = toKey(new Date());
-  const next = (bookings || []).filter((b) => ['confirmed', 'reserved'].includes(b.status) && b.date >= today)
-    .sort((a, b) => (a.date + a.startHour).localeCompare(b.date + b.startHour))[0];
+  const upcoming = (bookings || []).filter((b) => ['confirmed', 'reserved'].includes(b.status) && b.date >= today)
+    .sort((a, b) => (a.date + a.startHour).localeCompare(b.date + b.startHour));
+  const next = upcoming[0];
     const latest = (news || []).sort(byNewest).slice(0, 3);
     const top3 = [...(board || [])]
       .sort((a, b) => (b.wins || 0) - (a.wins || 0) || (a.losses || 0) - (b.losses || 0) || (b.points || 0) - (a.points || 0))
@@ -105,14 +142,11 @@ export default function Home() {
       </div>
 
       <section className="card">
-        <h2 style={{ marginBottom: 10 }}>Your next game</h2>
-        {next && (
-          <div className="bk">
-            <div className="bk-id">{next.walkInCode || `#${next.bookingId}`}</div>
-            <div><b>{next.courtName}</b> <Badge tone={next.status === 'confirmed' ? 'ok' : 'info'}>{next.status}</Badge>
-              <div className="meta"><span>{fmtDate(next.date)}</span><span>{fmtRange(next.startHour, next.durationHours)}</span></div></div>
-          </div>
-        )}
+        <div className="spread" style={{ marginBottom: 10 }}>
+          <h2>Your next game</h2>
+          <Link to="/bookings">Show all bookings</Link>
+        </div>
+        {upcoming.length > 0 && <TicketPile items={upcoming} />}
         {(news || []).filter((a) => a.type === 'tournament').map((a) => <TournamentNext key={a.id} a={a} uid={user.uid} today={today} />)}
         {!next && <p>No upcoming games. <Link to="/book">Reserve a court</Link> to get started.</p>}
       </section>

@@ -6,9 +6,13 @@ import { httpsCallable } from 'firebase/functions';
 import { Link } from 'react-router-dom';
 import { db, functions } from '../firebase';
 import { useAuth } from '../context/AuthContext';
-import { byNewest, useLive } from '../lib/hooks';
+import { useLive } from '../lib/hooks';
 import { cancelBooking, fmtDate, fmtRange, logActivity, peso } from '../lib/booking';
 import { Empty, PageHead, Spinner, StatusBadge, toast } from '../components/Ui';
+
+const ts = (t) =>
+  t?.toMillis ? t.toMillis() : t?.seconds ? t.seconds * 1000 : t ? new Date(t).getTime() || 0 : 0;
+const latest = (b) => Math.max(ts(b.paidAt), ts(b.createdAt), ts(b.updatedAt));
 
 export default function Bookings() {
   const { user, profile } = useAuth();
@@ -29,7 +33,10 @@ export default function Bookings() {
   };
 
   if (list === null) return <Spinner />;
-  const rows = [...list].sort(byNewest);
+  const rows = [...list].sort((a, b) =>
+    latest(b) - latest(a) ||
+    (b.date || '').localeCompare(a.date || '') || (b.startHour || 0) - (a.startHour || 0)
+  );
   return (
     <div>
       <PageHead title="Booking history" sub="Every court you've reserved."><Link className="btn primary" to="/book">New booking</Link></PageHead>

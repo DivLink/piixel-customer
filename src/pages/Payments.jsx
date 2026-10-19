@@ -2,15 +2,20 @@ import { collection, query, where } from 'firebase/firestore';
 import { Wallet } from 'lucide-react';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
-import { byNewest, fmtDateTime, useLive } from '../lib/hooks';
+import { fmtDateTime, useLive } from '../lib/hooks';
 import { fmtDate, peso } from '../lib/booking';
 import { Empty, PageHead, Spinner, StatusBadge } from '../components/Ui';
+
+const ms = (t) =>
+  t?.toMillis ? t.toMillis() : t?.seconds ? t.seconds * 1000 : t ? new Date(t).getTime() || 0 : 0;
 
 export default function Payments() {
   const { user } = useAuth();
   const list = useLive(() => query(collection(db, 'payments'), where('uid', '==', user.uid)), [user.uid]);
   if (list === null) return <Spinner />;
-  const rows = [...list].sort(byNewest);
+  const rows = [...list].sort((a, b) =>
+    Math.max(ms(b.paidAt), ms(b.createdAt)) - Math.max(ms(a.paidAt), ms(a.createdAt))
+  );
   const total = rows.filter((p) => p.status === 'paid').reduce((s, p) => s + p.amount, 0);
   return (
     <div>
