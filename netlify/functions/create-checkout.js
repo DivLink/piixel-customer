@@ -5,9 +5,9 @@ import { getAuth } from 'firebase-admin/auth';
 if (!getApps().length) {
   initializeApp({
     credential: cert({
-      projectId: 'pickleball-593eb',
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+      project_id: 'pickleball-593eb',
+      client_email: process.env.FIREBASE_CLIENT_EMAIL,
+      private_key: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
     }),
   });
 }
