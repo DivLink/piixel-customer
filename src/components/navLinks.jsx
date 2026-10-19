@@ -5,7 +5,7 @@ export const LINKS = [
   { to: '/book', label: 'Book a court', icon: CalendarDays },
   { to: '/bookings', label: 'Booking history', icon: Ticket },
   { to: '/payments', label: 'Payment history', icon: Wallet },
-  { to: '/matches', label: 'Record a match', icon: Swords },
+  { to: '/matches', label: 'Record a match', icon: Swords, end: true },
   { to: '/matches/history', label: 'Match history', icon: Medal },
   { to: '/community', label: 'News & leaderboard', icon: Megaphone },
   { to: '/chat', label: 'Chat with admin', icon: MessageCircle },
