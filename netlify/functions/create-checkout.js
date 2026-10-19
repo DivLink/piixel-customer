@@ -3,18 +3,15 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 
 if (!getApps().length) {
-  const privateKey = (process.env.FIREBASE_PRIVATE_KEY || '')
-    .trim()
-    .replace(/^"|"$/g, '')
-    .replace(/\\n/g, '\n');
-
-  initializeApp({
-    credential: cert({
-      projectId: 'pickleball-593eb',
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey,
-    }),
-  });
+  const b64 = process.env.FIREBASE_SERVICE_ACCOUNT_B64;
+  const serviceAccount = b64
+    ? JSON.parse(Buffer.from(b64, 'base64').toString('utf8'))
+    : {
+        projectId: 'pickleball-593eb',
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').trim().replace(/^"|"$/g, '').replace(/\\n/g, '\n'),
+      };
+  initializeApp({ credential: cert(serviceAccount) });
 }
 const db = getFirestore();
 
@@ -41,7 +38,7 @@ export default async (req) => {
     const snap = await db.doc(`bookings/${bookingDocId}`).get();
     if (!snap.exists || snap.data().uid !== uid) return json({ error: 'Not your booking' }, 403, cors);
     const b = snap.data();
-    if (b.status !== 'reserved') return json({ error: 'Booking is not awaiting payment' }, 400, cors);
+    if (b.status !== 'pending_payment') return json({ error: `Booking status is "${b.status}", expected "pending_payment"` }, 400, cors);
 
     const base = allowed ? origin : process.env.URL;
     const r = await fetch('https://api.paymongo.com/v1/checkout_sessions', {
