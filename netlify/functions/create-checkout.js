@@ -3,11 +3,16 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 
 if (!getApps().length) {
+  const privateKey = (process.env.FIREBASE_PRIVATE_KEY || '')
+    .trim()
+    .replace(/^"|"$/g, '')
+    .replace(/\\n/g, '\n');
+
   initializeApp({
     credential: cert({
-      project_id: 'pickleball-593eb',
-      client_email: process.env.FIREBASE_CLIENT_EMAIL,
-      private_key: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+      projectId: 'pickleball-593eb',
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey,
     }),
   });
 }
